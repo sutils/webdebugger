@@ -33,6 +33,7 @@ func TestMain(t *testing.T) {
 		mux := http.NewServeMux()
 		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			fmt.Printf("test server receive from %v\n", r.RemoteAddr)
+			fmt.Printf("running on WebDebuggerProxy %v\n", r.Header.Get("WebDebuggerProxy"))
 			fmt.Fprintf(w, "ok")
 		})
 		server := &http.Server{Addr: ":10021", Handler: mux}

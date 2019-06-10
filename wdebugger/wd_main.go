@@ -14,7 +14,7 @@ var exitf = os.Exit
 func init() {
 	flag.StringVar(&argConf, "f", "./wdebugger.json", "the web debugger configure file")
 	flag.BoolVar(&argRunServer, "s", false, "start cert center server")
-	flag.BoolVar(&argRunProxy, "p", false, "start web debuger proxy server")
+	flag.BoolVar(&argRunProxy, "p", true, "start web debuger proxy server")
 	flag.Parse()
 }
 
