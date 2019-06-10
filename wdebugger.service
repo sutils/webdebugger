@@ -1,0 +1,12 @@
+[Unit]
+Description=wdebugger service
+After=network.target
+
+[Service]
+User=wdebugger
+Restart=always
+WorkingDirectory=/home/wdebugger
+ExecStart=/home/wdebugger/srv/wdebugger -s /etc/wdebugger/wdebugger.json
+
+[Install]
+WantedBy=multi-user.target

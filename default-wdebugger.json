@@ -1,0 +1,12 @@
+{
+    "listen": ":10020",
+    "certs": [
+        {
+            "host": "wdebugger.snows.io:443",
+            "username": "abc",
+            "password": "40bd001563085fc35165329ea1ff5c5ecbdbbeef",
+            "cert": "test.crt",
+            "key": "test.key"
+        }
+    ]
+}

@@ -1,0 +1,22 @@
+{
+    "proxy": {
+        "socks5": ":10200",
+        "http": "127.0.0.1:10201"
+    },
+    "hosts": [
+        {
+            "host": "wdebugger.snows.io:443",
+            "decorder": "test",
+            "forward": "http://localhost:10021"
+        }
+    ],
+    "decorder": [
+        {
+            "name": "test",
+            "type": "TlsDecorder",
+            "server": "http://localhost:10020/cert?host=%v",
+            "username": "abc",
+            "password": "123"
+        }
+    ]
+}
