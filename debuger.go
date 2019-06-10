@@ -134,6 +134,8 @@ func (d *Debuger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "parse %v fail with %v", host.Forward, err)
 		return
 	}
+	r.Host = target.Host
+	r.Header.Add("WebDebuggerProxy", "v1.0.0")
 	proxy := httputil.NewSingleHostReverseProxy(target)
 	proxy.ServeHTTP(w, r)
 }
