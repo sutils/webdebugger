@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -87,16 +86,6 @@ func stopClient() {
 	if debugger != nil {
 		debugger.Close()
 	}
-}
-
-var clientKillSignal chan os.Signal
-
-func handlerClientKill() {
-	clientKillSignal = make(chan os.Signal, 1000)
-	signal.Notify(clientKillSignal, os.Kill, os.Interrupt)
-	v := <-clientKillSignal
-	webdebugger.WarnLog("Clien receive kill signal:%v", v)
-	stopClient()
 }
 
 const (

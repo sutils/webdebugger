@@ -5,6 +5,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"syscall"
+
+	"github.com/sutils/webdebugger"
+	"golang.org/x/sys/windows"
 )
 
 var privoxyRunner *exec.Cmd
@@ -23,4 +26,15 @@ func runPrivoxyNative(conf string) (err error) {
 	}
 	privoxyRunner = nil
 	return
+}
+
+func handlerClientKill() {
+	kernel32 := windows.NewLazySystemDLL("kernel32.dll")
+	setConsoleCtrlHandler := kernel32.NewProc("SetConsoleCtrlHandler")
+	setConsoleCtrlHandler.Call(
+		syscall.NewCallback(func(controlType uint) uint {
+			webdebugger.WarnLog("Clien receive kill signal:%v", controlType)
+			stopClient()
+			return 0
+		}), 1)
 }

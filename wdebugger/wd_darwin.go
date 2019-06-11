@@ -3,7 +3,10 @@ package main
 import (
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
+
+	"github.com/sutils/webdebugger"
 )
 
 var privoxyRunner *exec.Cmd
@@ -19,4 +22,15 @@ func runPrivoxyNative(conf string) (err error) {
 	}
 	privoxyRunner = nil
 	return
+}
+
+var clientKillSignal chan os.Signal
+
+func handlerClientKill() {
+	clientKillSignal = make(chan os.Signal, 1000)
+	// signal.Notify(clientKillSignal, os.Kill, os.Interrupt)
+	signal.Notify(clientKillSignal)
+	v := <-clientKillSignal
+	webdebugger.WarnLog("Clien receive kill signal:%v", v)
+	stopClient()
 }
