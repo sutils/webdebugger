@@ -1,6 +1,7 @@
 package webdebugger
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net"
@@ -18,9 +19,11 @@ type Config struct {
 
 //ConfigHost is pojo to debuger configure
 type ConfigHost struct {
-	Host     string `json:"host"`
-	Decorder string `json:"decorder"`
-	Forward  string `json:"forward"`
+	Host        string `json:"host"`
+	IP          string `json:"ip"`
+	Decorder    string `json:"decorder"`
+	Forward     string `json:"forward"`
+	DumpRequest int    `json:"dump_request"`
 }
 
 type remoteAddrConn struct {
@@ -77,7 +80,7 @@ func (d *Debuger) ProcConn(uri string, raw net.Conn) (async bool, err error) {
 	}
 	var host *ConfigHost
 	for _, h := range d.Hosts {
-		if h.Host == uri {
+		if h.Host == uri || h.IP == uri {
 			host = h
 			break
 		}
@@ -92,7 +95,7 @@ func (d *Debuger) ProcConn(uri string, raw net.Conn) (async bool, err error) {
 		}
 		return
 	}
-	DebugLog("Debuger start proc %v to %v by forwarding to %v", raw, uri, host.Forward)
+	InfoLog("Debuger start proc %v to %v by forwarding to %v", raw, uri, host.Forward)
 	d.configLck.RLock()
 	var decorderConfig map[string]interface{}
 	for _, c := range d.Config.Decorder {
@@ -118,7 +121,7 @@ func (d *Debuger) ProcConn(uri string, raw net.Conn) (async bool, err error) {
 func (d *Debuger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var host *ConfigHost
 	for _, h := range d.Hosts {
-		if h.Host == r.RemoteAddr {
+		if h.Host == r.RemoteAddr || h.IP == r.RemoteAddr {
 			host = h
 			break
 		}
@@ -133,6 +136,33 @@ func (d *Debuger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
 		fmt.Fprintf(w, "parse %v fail with %v", host.Forward, err)
 		return
+	}
+	if host.DumpRequest > 0 {
+		buf := bytes.NewBuffer(nil)
+		//
+		fmt.Fprintln(buf, "---URL---")
+		fmt.Fprintln(buf, "Host\t", r.Host)
+		fmt.Fprintln(buf, "Path\t", r.URL.Path)
+		fmt.Fprintln(buf, "RawPath\t", r.URL.RawPath)
+		fmt.Fprintln(buf, "RawQuery\t", r.URL.RawQuery)
+		fmt.Fprintln(buf, "User\t", r.URL.User)
+		//
+		fmt.Fprintln(buf, "\n---Header---")
+		for k, v := range r.Header {
+			fmt.Fprintln(buf, k, "\t", v)
+		}
+		//
+		fmt.Fprintln(buf, "\n---Form---")
+		for k, v := range r.Form {
+			fmt.Fprintln(buf, k, "\t", v)
+		}
+		//
+		fmt.Fprintln(buf, "---PostForm---")
+		for k, v := range r.PostForm {
+			fmt.Fprintln(buf, k, "\t", v)
+		}
+		fmt.Fprintf(buf, "\n\n\n")
+		InfoLog("Debuger dump request:\n%v", string(buf.Bytes()))
 	}
 	r.Host = target.Host
 	r.Header.Add("WebDebuggerProxy", "v1.0.0")
