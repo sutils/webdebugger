@@ -109,8 +109,9 @@ func (t *TLSCertCenter) auth(w http.ResponseWriter, r *http.Request) (host, cert
 	if len(username) > 0 {
 		u, p, _ := r.BasicAuth()
 		if u != username || SHA1([]byte(p)) != password {
+			w.Header().Set("WWW-Authenticate", `Basic realm="Web Debugger"`)
 			w.WriteHeader(401)
-			fmt.Fprintf(w, "auth fail")
+			w.Write([]byte("Login Required.\n"))
 			return
 		}
 	}
